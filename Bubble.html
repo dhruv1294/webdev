@@ -1,0 +1,268 @@
+<html>
+  <style>
+    canvas {border:1px solid black;
+  background-color:#40E0D0;
+}
+
+.v{visibility: hidden;}
+
+    .number{position: absolute;
+right:    40px;;
+top:   20px;
+   font-weight:bold;
+    color:#008080;}
+    .score{
+       position: absolute;
+right:    20px;;
+top:   0;
+   font-weight:bold;
+    color:#008080;}
+    .canvas{visibility: hidden;}
+    .btn2{font-size:20px;
+    font-weight:bold;
+      background-color:#008B8B;
+      color:white;
+      border-radius:20px;
+      visibility:visible;
+    }
+    .btn2:hover{background-color:#20B2AA	;}
+    .divforbtn{text-align:center;
+    }
+    .divforbtn2{text-align:center;
+    position: absolute;
+      visiblity:hidden;
+right:    0;
+bottom:   0;}
+    body{margin:0;
+      background-color:#AFEEEE;}
+    .btn{background-color:#20B2AA;
+    font-size:30px;
+    border-radius:20px;
+    color:white;
+     width:25%;
+      height:60px;
+    }
+    .btn:hover{background-color:#008B8B;}
+    .listing{   font-family: "Times New Roman", Times, serif;
+   font-weight:bold;
+     text-align:center;
+      color:mediumvioletred;}
+    .heading{ text-align:center;
+       text-shadow: 2px 2px #D8BFD8;
+      color:purple;
+    }
+    .heading2{color:darkmagenta;
+    text-align:center;
+     text-shadow: 2px 2px #D8BFD8;}
+  </style>
+  <canvas class="canvas" id="gameCanvas" ></canvas>
+  <h1 class="heading" id="headd">BURST THE BUBBLES</h1>
+  <div id="divforscore">
+  <p class="score" id="store">SCORE</p>
+    <p class="number" id="s">0</p>
+  </div>
+  <h2 class="heading2" id="headd2">INSTRUCTIONS</h2>
+
+    <p class="listing" id="l1">🐬💜Tap on the bubbles as fast as possible to burst them</p>
+    <p class="listing" id="l2">🐬💜For each bubble popped,You get 1 point</p>
+    <p class="listing" id="l3">🐬💜If more than 75% of screen is filled with bubbles, You lose!</p>
+    <p class="listing" id="l4">🐬💜Have Fun!!! Press start and you are good to go !!!</p>
+  <div class="divforbtn" id="div2">
+  <button  class="btn" id="start"  >START</button>
+  </div><br>
+  <div class="divforbtn2" id="divnext">
+  <button class="btn2" id="pause">|| PAUSE</button>
+  </div>
+
+  <script >
+
+
+
+
+
+
+  document.getElementById("start").addEventListener("click",f);
+
+  function f()
+  {
+    document.getElementById("gameCanvas").classList.remove("canvas");
+
+
+document.getElementById('headd').classList.add("v");
+
+document.getElementById("headd2").classList.add("v");
+document.getElementById("l4").classList.add("v");
+document.getElementById("l3").classList.add("v");
+document.getElementById("l2").classList.add("v");
+document.getElementById("l1").classList.add("v");
+document.getElementById("start").classList.add("v");
+document.getElementById("div2").classList.add("v");
+document.getElementById("divnext").classList.add("v");
+document.getElementById("pause").classList.add("v");
+
+
+
+
+
+
+  var canvas=document.querySelector('canvas');
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight;
+
+
+  var c=canvas.getContext('2d');
+  var score=0;
+
+  function popped(event)
+  {for(let i=0;i<particles.length;++i)
+  {if (distance(particles[i].x,particles[i].y,event.clientX,event.clientY)<particles[i].radius)
+  {particles.splice(i,1);
+  score=score+1;
+  document.getElementById("s").innerHTML=score;}}}
+
+
+  function inrange(min,max)
+  {return Math.floor(Math.random()*(max-min+1)+min);}
+
+
+  function distance(x1,y1,x2,y2)
+  {var xdis=x2-x1;
+  var ydis=y2-y1;
+  return Math.sqrt(Math.pow(xdis,2)+Math.pow(ydis,2));}
+
+  function rotate(velocity, angle) {
+      const rotatedVelocities = {
+          x: velocity.x * Math.cos(angle) - velocity.y * Math.sin(angle),
+          y: velocity.x * Math.sin(angle) + velocity.y * Math.cos(angle)
+      };
+
+      return rotatedVelocities;
+  }
+
+
+  function resolveCollision(particle, otherParticle) {
+      const xVelocityDiff = particle.velocity.x - otherParticle.velocity.x;
+      const yVelocityDiff = particle.velocity.y - otherParticle.velocity.y;
+
+      const xDist = otherParticle.x - particle.x;
+      const yDist = otherParticle.y - particle.y;
+
+      // Prevent accidental overlap of particles
+      if (xVelocityDiff * xDist + yVelocityDiff * yDist >= 0) {
+
+          // Grab angle between the two colliding particles
+          const angle = -Math.atan2(otherParticle.y - particle.y, otherParticle.x - particle.x);
+
+          // Store mass in var for better readability in collision equation
+          const m1 = particle.mass;
+          const m2 = otherParticle.mass;
+
+          // Velocity before equation
+          const u1 = rotate(particle.velocity, angle);
+          const u2 = rotate(otherParticle.velocity, angle);
+
+          // Velocity after 1d collision equation
+          const v1 = { x: u1.x * (m1 - m2) / (m1 + m2) + u2.x * 2 * m2 / (m1 + m2), y: u1.y };
+          const v2 = { x: u2.x * (m1 - m2) / (m1 + m2) + u1.x * 2 * m2 / (m1 + m2), y: u2.y };
+
+          // Final velocity after rotating axis back to original location
+          const vFinal1 = rotate(v1, -angle);
+          const vFinal2 = rotate(v2, -angle);
+
+          // Swap particle velocities for realistic bounce effect
+          particle.velocity.x = vFinal1.x;
+          particle.velocity.y = vFinal1.y;
+
+          otherParticle.velocity.x = vFinal2.x;
+          otherParticle.velocity.y = vFinal2.y;
+      }
+  }
+
+var vars=1;
+
+  function Particle(x,y,radius,color)
+  {this.x=x;
+  this.y=y;
+  this.radius=radius;
+  this.color=color;
+  this.mass=1;
+  this.velocity={x:(Math.random()-0.5)*5,
+  y:(Math.random()-0.5)*5};
+
+  this.draw=()=>{
+  c.beginPath();
+  c.arc(this.x,this.y,this.radius,0,Math.PI*2,false);
+  c.fillstyle=this.color;
+  c.fill();
+  c.closePath();
+  };
+
+
+  this.update=particles=>{
+  this.draw();
+  for(let i=0;i<particles.length;++i)
+  {if(this===particles[i]) continue;
+  if(distance(this.x,this.y,particles[i].x,particles[i].y)-this.radius*2<0)
+  {resolveCollision(this,particles[i]);
+  }}
+
+  if(this.x-this.radius<=0||this.x+this.radius>=innerWidth)
+  this.velocity.x=-this.velocity.x;
+
+  if(this.y-this.radius<=0||this.y+this.radius>=innerHeight)
+  this.velocity.y=-this.velocity.y;
+
+  this.x=this.x+this.velocity.x;
+  this.y=this.y+this.velocity.y;
+  };}
+
+  let particles=[];
+
+  function init()
+  {
+  for(let i=0;i<5;++i)
+  { var x=inrange(radius,innerWidth-radius);
+  var y=inrange(radius,innerHeight-radius);
+  var radius=30;
+  var color='blue';
+  if(i!==0)
+  {for(let j=0;j<particles.length;++j)
+  if(distance(x,y,particles[j].x,particles[j].y)-radius*2<0)
+  { x=inrange(radius,innerWidth-radius);
+   y=inrange(radius,innerHeight-radius);
+
+  j=-1; }}
+  particles.push(new Particle(x,y,radius,color));}
+ if(particles.length>=50)
+  {vars=0;alert("hello oops");}
+}
+
+
+
+
+  function movey()
+  {requestAnimationFrame(movey);
+   c.clearRect(0,0,innerWidth,innerHeight);
+  particles.forEach(particle=>{particle.update(particles);});
+  }
+
+
+document.getElementById("pause").addEventListener("click",function(){alert("PAUSE");})
+
+
+if(vars==1 )
+  setInterval(init,2000);
+
+
+  movey();
+
+
+
+  document.addEventListener("click",popped);
+
+  }
+
+
+    </script>
+
+  </html>
